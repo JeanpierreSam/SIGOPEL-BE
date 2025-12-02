@@ -1,11 +1,13 @@
 package com.example.backend_sigopel_v1.controller.general;
 
+import com.example.backend_sigopel_v1.dto.CambioEstadoEntregaDTO;
 import com.example.backend_sigopel_v1.dto.DetalleDTO;
 import com.example.backend_sigopel_v1.service.general.service.DetalleService;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.service.spi.ServiceException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -62,5 +64,14 @@ public class DetalleController {
     public ResponseEntity<Void> delete(@PathVariable Long id) throws ServiceException {
         detalleService.delete(id);
         return ResponseEntity.noContent().build();
+    }
+    @PatchMapping("/{id}/estado")
+
+    public ResponseEntity<DetalleDTO> cambiarEstado(
+            @PathVariable Long id,
+            @RequestBody CambioEstadoEntregaDTO request) throws ServiceException {
+
+        DetalleDTO actualizado = detalleService.cambiarEstado(id, request);
+        return ResponseEntity.ok(actualizado);
     }
 }

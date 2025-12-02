@@ -45,7 +45,7 @@ public class ApplicationConfig {
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
         System.out.println("=== HASHES PARA SIGOPEL ===");
-        System.out.println("admin123: " + encoder.encode("admin123"));
+        System.out.println("123: " + encoder.encode("123"));
         System.out.println("secre123: " + encoder.encode("secre123"));
         System.out.println("gerente123: " + encoder.encode("gerente123"));
     }

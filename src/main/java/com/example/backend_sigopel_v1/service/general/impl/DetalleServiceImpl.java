@@ -1,10 +1,13 @@
 package com.example.backend_sigopel_v1.service.general.impl;
 
 import com.example.backend_sigopel_v1.controller.error.ResourceNotFoundException;
+import com.example.backend_sigopel_v1.dto.CambioEstadoEntregaDTO;
 import com.example.backend_sigopel_v1.dto.DetalleDTO;
 import com.example.backend_sigopel_v1.entity.Detalle;
+import com.example.backend_sigopel_v1.entity.EstadoEntrega;
 import com.example.backend_sigopel_v1.mapper.DetalleMapper;
 import com.example.backend_sigopel_v1.repository.DetalleRepository;
+import com.example.backend_sigopel_v1.repository.EstadoEntregaRepository;
 import com.example.backend_sigopel_v1.service.general.service.DetalleService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,6 +24,7 @@ public class DetalleServiceImpl implements DetalleService {
 
     private final DetalleRepository detalleRepository;
     private final DetalleMapper detalleMapper;
+    private final EstadoEntregaRepository estadoEntregaRepository;
 
     @Override
     @Transactional
@@ -111,6 +115,36 @@ public class DetalleServiceImpl implements DetalleService {
         } catch (Exception e) {
             log.error("Error al buscar detalles por tracking {}", trackingId, e);
             throw new ServiceException("Error al buscar detalles por tracking", e);
+        }
+    }
+    @Override
+    @Transactional
+    public DetalleDTO cambiarEstado(Long detalleId, CambioEstadoEntregaDTO dto) throws ServiceException {
+        try {
+            Detalle detalle = detalleRepository.findById(detalleId)
+                    .orElseThrow(() ->
+                            new com.example.backend_sigopel_v1.controller.error.ResourceNotFoundException(
+                                    "Detalle no encontrado con id: " + detalleId));
+
+            EstadoEntrega nuevoEstado = estadoEntregaRepository.findByNombre(dto.getEstadoNombre())
+                    .orElseThrow(() -> new RuntimeException(
+                            "Estado de entrega no encontrado: " + dto.getEstadoNombre()));
+
+            detalle.setEstadoEntrega(nuevoEstado);
+
+            if (dto.getObservacion() != null && !dto.getObservacion().isBlank()) {
+                detalle.setObservacion(dto.getObservacion());
+            }
+
+            Detalle guardado = detalleRepository.save(detalle);
+            return detalleMapper.toDTO(guardado);
+
+        } catch (RuntimeException e) {
+            log.error("Error de validación al cambiar estado de entrega {}: {}", detalleId, e.getMessage());
+            throw new ServiceException("Error de validación: " + e.getMessage(), e);
+        } catch (Exception e) {
+            log.error("Error al cambiar estado de entrega {}", detalleId, e);
+            throw new ServiceException("Error al cambiar estado de entrega", e);
         }
     }
 }
