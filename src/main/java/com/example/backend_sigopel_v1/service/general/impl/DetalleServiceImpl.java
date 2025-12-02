@@ -118,24 +118,36 @@ public class DetalleServiceImpl implements DetalleService {
         }
     }
     @Override
+    public List<EstadoEntrega> obtenerEstados() throws ServiceException {
+        try {
+            return estadoEntregaRepository.findAll();
+        } catch (Exception e) {
+            throw new ServiceException("Error al obtener estados de entrega", e);
+        }
+    }
+    @Override
     @Transactional
     public DetalleDTO cambiarEstado(Long detalleId, CambioEstadoEntregaDTO dto) throws ServiceException {
         try {
+            // 1. Buscar el detalle
             Detalle detalle = detalleRepository.findById(detalleId)
-                    .orElseThrow(() ->
-                            new com.example.backend_sigopel_v1.controller.error.ResourceNotFoundException(
-                                    "Detalle no encontrado con id: " + detalleId));
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            "Detalle no encontrado con id: " + detalleId));
 
-            EstadoEntrega nuevoEstado = estadoEntregaRepository.findByNombre(dto.getEstadoNombre())
+            // 2. Buscar el nuevo estado por ID (del DTO)
+            EstadoEntrega nuevoEstado = estadoEntregaRepository.findById(dto.getEstadoEntregaId())
                     .orElseThrow(() -> new RuntimeException(
-                            "Estado de entrega no encontrado: " + dto.getEstadoNombre()));
+                            "Estado de entrega no encontrado con id: " + dto.getEstadoEntregaId()));
 
+            // 3. Actualizar estado
             detalle.setEstadoEntrega(nuevoEstado);
 
+            // 4. Actualizar observación si viene algo
             if (dto.getObservacion() != null && !dto.getObservacion().isBlank()) {
                 detalle.setObservacion(dto.getObservacion());
             }
 
+            // 5. Guardar
             Detalle guardado = detalleRepository.save(detalle);
             return detalleMapper.toDTO(guardado);
 
@@ -147,4 +159,5 @@ public class DetalleServiceImpl implements DetalleService {
             throw new ServiceException("Error al cambiar estado de entrega", e);
         }
     }
+
 }

@@ -9,6 +9,6 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class CambioEstadoEntregaDTO {
-    private String estadoNombre;   // obligatorio
+    private Long estadoEntregaId;   // obligatorio
     private String observacion;    // opcional
 }

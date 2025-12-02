@@ -2,6 +2,7 @@ package com.example.backend_sigopel_v1.controller.general;
 
 import com.example.backend_sigopel_v1.dto.CambioEstadoEntregaDTO;
 import com.example.backend_sigopel_v1.dto.DetalleDTO;
+import com.example.backend_sigopel_v1.entity.EstadoEntrega;
 import com.example.backend_sigopel_v1.service.general.service.DetalleService;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.service.spi.ServiceException;
@@ -65,8 +66,21 @@ public class DetalleController {
         detalleService.delete(id);
         return ResponseEntity.noContent().build();
     }
-    @PatchMapping("/{id}/estado")
 
+    /**
+     * Obtiene todos los estados de entrega disponibles
+     * GET /api/v1/detalles/estados
+     */
+    @GetMapping("/estados")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<List<EstadoEntrega>> obtenerEstados() throws ServiceException {
+        List<EstadoEntrega> estados = detalleService.obtenerEstados();
+        return ResponseEntity.ok(estados);
+    }
+
+    @PatchMapping("/{id}/estado")
+    @CrossOrigin(origins = "http://localhost:4200")  // ← AGREGAR AQUÍ
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<DetalleDTO> cambiarEstado(
             @PathVariable Long id,
             @RequestBody CambioEstadoEntregaDTO request) throws ServiceException {
